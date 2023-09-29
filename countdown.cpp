@@ -72,7 +72,7 @@ void Countdown::on_cdButton_clicked()
         // Create time formatted string
         QString tString{Countdown::createTimeString(hours, minutes, seconds)};
 
-        ui->text_above_num_label->setText("Downloading virus in:");
+        ui->text_above_num_label->setText("Countdown:");
 
         ui->numlabel->setText(tString);
         timer->start(1000);
