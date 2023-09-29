@@ -78,7 +78,7 @@ void Countdown::on_cdButton_clicked()
         timer->start(1000);
     }
 
-    // BOOKMARK - set up a pause that stops the timer and changed the text on the butto
+    // BOOKMARK - set up a pause that stops the timer and changed the text on the button
     // set up github commits with this maybe https://cpb-us-w2.wpmucdn.com/u.osu.edu/dist/7/11881/files/2018/02/QtCreatorGitTutorial-2ahr2m0.pdf
     else
     {
