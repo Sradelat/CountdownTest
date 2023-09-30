@@ -20,6 +20,7 @@ private slots:
     void on_cdButton_clicked();
     void ticker();
     void on_closeButton_clicked();
+    void on_resetButton_clicked();
 
 private:
     Ui::Countdown *ui;
@@ -28,5 +29,7 @@ private:
     QString cSeconds {"00"};
     QString cMinutes {"00"};
     QString cHours {"00"};
+    bool timerStarted {false};
+    bool defaultState {true};
 };
 #endif // COUNTDOWN_H
