@@ -92,7 +92,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Go!</string>
+     <string>Start</string>
     </property>
    </widget>
    <widget class="QPushButton" name="closeButton">
@@ -105,7 +105,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Thank you.</string>
+     <string>Close</string>
     </property>
    </widget>
    <widget class="QLabel" name="text_above_num_label">

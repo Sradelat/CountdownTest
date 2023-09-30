@@ -3,6 +3,7 @@
 #include <QTimer>
 #include <windows.h>
 #include <string>
+#include <QByteArray>
 
 // TODO: Use default state variable to keep time left or not
 
@@ -10,10 +11,15 @@ Countdown::Countdown(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Countdown)
 {
+    // Timer Setup
     ui->setupUi(this);
     timer = new QTimer(this);
 
+    // Run ticker() on timeout
     connect(timer, SIGNAL(timeout()), this, SLOT(ticker()));
+
+    // Attempt - look into restoreState() use of QSettings
+//    QByteArray defaultWindow {this->saveState(1)};
 }
 
 Countdown::~Countdown()
@@ -61,9 +67,6 @@ QString Countdown::createTimeString(int hours, int minutes, int seconds)
 
 void Countdown::on_cdButton_clicked()
 {
-    // If time is up or not yet started - should use a pause true false variable probably
-
-
     if (Countdown::defaultState == true)
     {
         // Variables capture values
@@ -71,6 +74,7 @@ void Countdown::on_cdButton_clicked()
         int minutes = ui->spinMinutes->value();
         int hours = ui->spinHours->value();
 
+        // If no input but button was clicked - throw error and kill function
         if (seconds == 0 && minutes == 0 && hours == 0)
         {
             ui->text_above_num_label->setText("ERROR: Please enter a time.");
@@ -88,21 +92,25 @@ void Countdown::on_cdButton_clicked()
         // Create time formatted string
         QString tString{Countdown::createTimeString(hours, minutes, seconds)};
 
+        // Update UI
         ui->text_above_num_label->setText("Countdown:");
-
         ui->numlabel->setText(tString);
+        ui->cdButton->setText("Pause");
+
+        // Start timer - slot every 1000ms
         timer->start(1000);
 
-        ui->cdButton->setText("Pause");
+        // Update tracker variables
         Countdown::timerStarted = true;
         Countdown::defaultState = false;
     }
 
+    // Countdown pause if timer is ticking
     else if (Countdown::defaultState == false && Countdown::timerStarted == true)
     {
         timer->stop();
         Countdown::timerStarted = false;
-        ui->cdButton->setText("Go!");
+        ui->cdButton->setText("Start");
     }
 
     else // defaultState == false and timerStarted == false
@@ -142,6 +150,8 @@ void Countdown::ticker()
 
     // Convert int variables to QString and set it to label text
     QString tString{Countdown::createTimeString(intHours, intMinutes, intSeconds)};
+
+    // Update UI with QString above
     ui->numlabel->setText(tString);
 
     // Countdown completes
@@ -150,6 +160,8 @@ void Countdown::ticker()
         Countdown::cHours == "00")
     {
         timer->stop();
+        Countdown::timerStarted = false;
+        Countdown::defaultState = true;
         qApp->processEvents();
         Sleep(1000);
         ui->text_above_num_label->clear();
@@ -159,8 +171,10 @@ void Countdown::ticker()
         ui->text_above_num_label->setText("Countdown complete.");
         qApp->processEvents();
         Sleep(2000);
+
+        // Reset UI
         ui->numlabel->setText("Thank you :)");
-        ui->cdButton->setText("Go again!");
+        ui->cdButton->setText("Start");
         ui->spinSeconds->show();
         ui->spinMinutes->show();
         ui->spinHours->show();
@@ -172,16 +186,23 @@ void Countdown::ticker()
 
 void Countdown::on_closeButton_clicked()
 {
-    Sleep(2000);
-    ui->numlabel->setStyleSheet("QLabel{color: rgb(170, 0, 0);}");
-    qApp->processEvents();
-    Sleep(300);
+    // Fun stuff
+//    Sleep(2000);
+//    ui->numlabel->setStyleSheet("QLabel{color: rgb(170, 0, 0);}");
+//    qApp->processEvents();
+//    Sleep(300);
+
     close();
 }
 
 void Countdown::on_resetButton_clicked()
 {
+    // Reset UI and program variables
     timer->stop();
+
+//    // Attempt
+//    this->restoreState(defaultWindow);
+
     ui->spinSeconds->show();
     ui->spinMinutes->show();
     ui->spinHours->show();
@@ -190,7 +211,7 @@ void Countdown::on_resetButton_clicked()
     ui->hLabel->show();
     ui->numlabel->setText("");
     ui->text_above_num_label->setText("");
-    ui->cdButton->setText("Go!");
+    ui->cdButton->setText("Start");
     Countdown::cSeconds = "00";
     Countdown::cMinutes = "00";
     Countdown::cHours = "00";
