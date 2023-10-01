@@ -5,8 +5,6 @@
 #include <string>
 #include <QByteArray>
 
-// TODO: Use default state variable to keep time left or not
-
 Countdown::Countdown(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Countdown)
@@ -17,9 +15,6 @@ Countdown::Countdown(QWidget *parent)
 
     // Run ticker() on timeout
     connect(timer, SIGNAL(timeout()), this, SLOT(ticker()));
-
-    // Attempt - look into restoreState() use of QSettings
-//    QByteArray defaultWindow {this->saveState(1)};
 }
 
 Countdown::~Countdown()
@@ -27,9 +22,38 @@ Countdown::~Countdown()
     delete ui;
 }
 
+
+/**
+ * Stops timer and resets UI and UI related variables to runtime state
+ * except for spinner values as a reminder.
+ */
+void Countdown::resetUI()
+{
+    // Could look into using saveState() and restoreState() using QSetting instead of this
+    timer->stop();
+    ui->spinSeconds->show();
+    ui->spinMinutes->show();
+    ui->spinHours->show();
+    ui->sLabel->show();
+    ui->mLabel->show();
+    ui->hLabel->show();
+    ui->numlabel->clear();
+    ui->text_above_num_label->clear();
+    ui->cdButton->setText("Start");
+    Countdown::timerStarted = false;
+    Countdown::defaultState = true;
+}
+
+
+/**
+ * Converts seconds, minutes, hours variables from int to QString for display
+ * in format HH:MM:SS
+ */
 QString Countdown::createTimeString(int hours, int minutes, int seconds)
 {
     QString tString{ "" };
+
+    // 0 pads to the left if < 10
     if (hours >= 10)
     {
         Countdown::cHours = QString::fromStdString(std::to_string(hours));
@@ -65,23 +89,29 @@ QString Countdown::createTimeString(int hours, int minutes, int seconds)
     return tString;
 }
 
+
+/**
+ * Grabs input from spin boxes and converts to a string to display starting time and then starts timer.
+ *
+ * If no input, throws error and does not start timer
+ */
 void Countdown::on_cdButton_clicked()
 {
     if (Countdown::defaultState == true)
     {
-        // Variables capture values
+        // Variables capture values in spin boxes
         int seconds = ui->spinSeconds->value();
         int minutes = ui->spinMinutes->value();
         int hours = ui->spinHours->value();
 
-        // If no input but button was clicked - throw error and kill function
+        // If no input but start button was clicked - throw error and stop function
         if (seconds == 0 && minutes == 0 && hours == 0)
         {
             ui->text_above_num_label->setText("ERROR: Please enter a time.");
             return;
         }
 
-        // Hide UI
+        // Hide these UI elements
         ui->spinSeconds->hide();
         ui->spinMinutes->hide();
         ui->spinHours->hide();
@@ -89,7 +119,7 @@ void Countdown::on_cdButton_clicked()
         ui->mLabel->hide();
         ui->hLabel->hide();
 
-        // Create time formatted string
+        // Create time formatted string HH:MM:SS
         QString tString{Countdown::createTimeString(hours, minutes, seconds)};
 
         // Update UI
@@ -113,6 +143,7 @@ void Countdown::on_cdButton_clicked()
         ui->cdButton->setText("Start");
     }
 
+    // Restarts ticker with no save state from paused time
     else // defaultState == false and timerStarted == false
     {
         timer->start(1000);
@@ -121,9 +152,15 @@ void Countdown::on_cdButton_clicked()
     }
 }
 
+
+/**
+ * Decrements time according to timer timeout and displays time remaining.
+ *
+ * When time runs out, resets UI and displays notification that countdown was completed.
+ */
 void Countdown::ticker()
 {
-    // Convert number strings to integers as variables
+    // Convert number strings to integers as variables for numeric manipulation
     int intHours {Countdown::cHours.toInt()};
     int intMinutes {Countdown::cMinutes.toInt()};
     int intSeconds {Countdown::cSeconds.toInt()};
@@ -148,10 +185,8 @@ void Countdown::ticker()
         }
     }
 
-    // Convert int variables to QString and set it to label text
+    // Convert int variables back to QString and set it to label text
     QString tString{Countdown::createTimeString(intHours, intMinutes, intSeconds)};
-
-    // Update UI with QString above
     ui->numlabel->setText(tString);
 
     // Countdown completes
@@ -159,63 +194,24 @@ void Countdown::ticker()
         Countdown::cMinutes == "00" &&
         Countdown::cHours == "00")
     {
-        timer->stop();
-        Countdown::timerStarted = false;
-        Countdown::defaultState = true;
-        qApp->processEvents();
-        Sleep(1000);
-        ui->text_above_num_label->clear();
-        ui->numlabel->clear();
-        qApp->processEvents();
-        Sleep(1000);
-        ui->text_above_num_label->setText("Countdown complete.");
-        qApp->processEvents();
-        Sleep(2000);
+        resetUI();
 
-        // Reset UI
-        ui->numlabel->setText("Thank you :)");
-        ui->cdButton->setText("Start");
-        ui->spinSeconds->show();
-        ui->spinMinutes->show();
-        ui->spinHours->show();
-        ui->sLabel->show();
-        ui->mLabel->show();
-        ui->hLabel->show();
+        // Notify user countdown was completed
+        ui->text_above_num_label->setText("Countdown complete.");
     }
 }
 
+
+// Closes window
 void Countdown::on_closeButton_clicked()
 {
-    // Fun stuff
-//    Sleep(2000);
-//    ui->numlabel->setStyleSheet("QLabel{color: rgb(170, 0, 0);}");
-//    qApp->processEvents();
-//    Sleep(300);
-
     close();
 }
 
+
+// Resets UI to runtime state
 void Countdown::on_resetButton_clicked()
 {
-    // Reset UI and program variables
-    timer->stop();
-
-//    // Attempt
-//    this->restoreState(defaultWindow);
-
-    ui->spinSeconds->show();
-    ui->spinMinutes->show();
-    ui->spinHours->show();
-    ui->sLabel->show();
-    ui->mLabel->show();
-    ui->hLabel->show();
-    ui->numlabel->setText("");
-    ui->text_above_num_label->setText("");
-    ui->cdButton->setText("Start");
-    Countdown::cSeconds = "00";
-    Countdown::cMinutes = "00";
-    Countdown::cHours = "00";
-    Countdown::timerStarted = false;
-    Countdown::defaultState = true;
+    resetUI();
 }
 

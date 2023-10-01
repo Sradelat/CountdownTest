@@ -17,6 +17,7 @@ public:
 
 private slots:
     QString createTimeString(int hours, int minutes, int seconds);
+    void resetUI();
     void ticker();
     void on_cdButton_clicked();
     void on_closeButton_clicked();
